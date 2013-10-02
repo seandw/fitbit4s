@@ -1,0 +1,8 @@
+# Keys for OAuth
+fitbit.conf.json
+
+# node.js packages
+node_modules/
+
+# Working directory
+work/
