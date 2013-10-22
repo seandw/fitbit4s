@@ -1,8 +1,5 @@
 # Keys for OAuth
-fitbit.conf.json
+config.properties
 
-# node.js packages
-node_modules/
-
-# Working directory
-work/
+# sbt commands it
+target/
