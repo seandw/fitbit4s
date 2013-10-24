@@ -4,8 +4,10 @@ import java.util.Properties
 import java.io.FileInputStream
 import java.io.FileOutputStream
 
-object conf {
+import oauth.signpost.basic.DefaultOAuthProvider
+import oauth.signpost.OAuthConsumer
 
+class FitbitConfiguration {
   var (
     consumerKey,
     consumerSecret,
@@ -27,7 +29,13 @@ object conf {
         sys.exit(1)
     }
 
-  def getAccess(): Unit = {
+  def getAccess(consumer: OAuthConsumer): Unit = {
+    val provider = new DefaultOAuthProvider(
+      endpoints.RequestToken,
+      endpoints.AccessToken,
+      endpoints.Authorize
+    )
+
     val url = provider.retrieveRequestToken(consumer, null)
     println("Navigate to " + url + " to get your verifier.")
     
