@@ -30,11 +30,25 @@ extends FitbitEndpoints {
     val verifier = Console.readLine()
     provider.retrieveAccessToken(consumer, verifier)
     
-    //saveTokens()
+    saveTokens()
   }
 
   def setAccessTokens(accessToken: String, accessTokenSecret: String) =
     consumer.setTokenWithSecret(accessToken, accessTokenSecret)
+
+  private def saveTokens() =
+    try {
+      val prop = new Properties()
+      prop.setProperty("consumerKey", consumerKey)
+      prop.setProperty("consumerSecret", consumerSecret)
+      prop.setProperty("accessToken", consumer.getToken)
+      prop.setProperty("accessTokenSecret", consumer.getTokenSecret)
+      prop.store(new FileOutputStream("config.properties"),
+        "OAuth credentials for this application.")
+    } catch { case e: Exception =>
+        e.printStackTrace()
+        sys.exit(2)
+    }
 
   def getResource(resource: String): String = {
     val url = new URL(BaseUrl + resource)
