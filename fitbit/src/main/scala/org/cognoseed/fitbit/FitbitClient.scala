@@ -5,51 +5,10 @@ import java.util.Properties
 import java.io.{FileInputStream, FileOutputStream}
 import scala.io.BufferedSource
 
+import oauth.signpost.OAuthConsumer
 import oauth.signpost.basic.{DefaultOAuthConsumer, DefaultOAuthProvider}
 
-class FitbitClient(
-  consumerKey: String,
-  consumerSecret: String)
-extends FitbitEndpoints {
-  val consumer = new DefaultOAuthConsumer(
-    consumerKey,
-    consumerSecret
-  )
-
-  def getAccessTokens() = {
-    val provider = new DefaultOAuthProvider(
-      RequestTokenUrl,
-      AccessTokenUrl,
-      AuthorizeUrl
-    )
-
-    val url = provider.retrieveRequestToken(consumer, null)
-    println("Navigate to " + url + " to get your verifier.")
-    
-    print("Enter your verifier: ")
-    val verifier = Console.readLine()
-    provider.retrieveAccessToken(consumer, verifier)
-    
-    saveTokens()
-  }
-
-  def setAccessTokens(accessToken: String, accessTokenSecret: String) =
-    consumer.setTokenWithSecret(accessToken, accessTokenSecret)
-
-  private def saveTokens() =
-    try {
-      val prop = new Properties()
-      prop.setProperty("consumerKey", consumerKey)
-      prop.setProperty("consumerSecret", consumerSecret)
-      prop.setProperty("accessToken", consumer.getToken)
-      prop.setProperty("accessTokenSecret", consumer.getTokenSecret)
-      prop.store(new FileOutputStream("config.properties"),
-        "OAuth credentials for this application.")
-    } catch { case e: Exception =>
-        e.printStackTrace()
-        sys.exit(2)
-    }
-
+class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
   def getResource(resource: String): String = {
     val url = new URL(BaseUrl + resource)
     val request = url.openConnection()
@@ -60,7 +19,7 @@ extends FitbitEndpoints {
   }
 }
 
-object FitbitClient {
+object FitbitClient extends FitbitEndpoints {
   def apply() = {
     val (
       consumerKey,
@@ -83,14 +42,44 @@ object FitbitClient {
           sys.exit(1)
       }
 
-    val client = new FitbitClient(consumerKey, consumerSecret)
+    val consumer = new DefaultOAuthConsumer(consumerKey, consumerSecret)
 
     if (accessToken == null || accessTokenSecret == null)
-      client.getAccessTokens()
+      getAccessTokens(consumer)
     else
-      client.setAccessTokens(accessToken, accessTokenSecret)
+      consumer.setTokenWithSecret(accessToken, accessTokenSecret)
 
-    client
+    new FitbitClient(consumer)
   }
 
+  private def getAccessTokens(consumer: OAuthConsumer) = {
+    val provider = new DefaultOAuthProvider(
+      RequestTokenUrl,
+      AccessTokenUrl,
+      AuthorizeUrl
+    )
+
+    val url = provider.retrieveRequestToken(consumer, null)
+    println("Navigate to " + url + " to get your verifier.")
+
+    print("Enter your verifier: ")
+    val verifier = Console.readLine()
+    provider.retrieveAccessToken(consumer, verifier)
+
+    saveTokens(consumer)
+  }
+
+  private def saveTokens(consumer: OAuthConsumer) =
+    try {
+      val prop = new Properties()
+      prop.setProperty("consumerKey", consumer.getConsumerKey)
+      prop.setProperty("consumerSecret", consumer.getConsumerSecret)
+      prop.setProperty("accessToken", consumer.getToken)
+      prop.setProperty("accessTokenSecret", consumer.getTokenSecret)
+      prop.store(new FileOutputStream("config.properties"),
+        "OAuth credentials for this application.")
+    } catch { case e: Exception =>
+        e.printStackTrace()
+        sys.exit(2)
+    }
 }
