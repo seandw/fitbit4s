@@ -2,13 +2,24 @@ package org.cognoseed.fitbit
 
 import java.net.URL
 import java.util.Properties
-import java.io.{FileInputStream, FileOutputStream}
+import java.io.{InputStream, OutputStream}
 import scala.io.BufferedSource
 
 import oauth.signpost.OAuthConsumer
 import oauth.signpost.basic.{DefaultOAuthConsumer, DefaultOAuthProvider}
 
 class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
+
+  def this(
+    consumerKey: String,
+    consumerSecret: String,
+    accessToken: String,
+    accessTokenSecret: String
+  ) = {
+    this(new DefaultOAuthConsumer(consumerKey, consumerSecret))
+    consumer.setTokenWithSecret(accessToken, accessTokenSecret)
+  }
+
   def getResource(resource: String): String = {
     val url = new URL(BaseUrl + resource)
     val request = url.openConnection()
@@ -17,31 +28,32 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
 
     new BufferedSource(request.getInputStream()).mkString
   }
+
+  def store(stream: OutputStream) = {
+    val prop = new Properties()
+    prop.setProperty("consumerKey", consumer.getConsumerKey)
+    prop.setProperty("consumerSecret", consumer.getConsumerSecret)
+    prop.setProperty("accessToken", consumer.getToken)
+    prop.setProperty("accessTokenSecret", consumer.getTokenSecret)
+    prop.store(stream, "OAuth credentials for this application.")
+  }
+
 }
 
 object FitbitClient extends FitbitEndpoints {
-  def apply() = {
+  def fromProperties(prop: Properties): FitbitClient = {
     val (
       consumerKey,
       consumerSecret,
       accessToken,
       accessTokenSecret
-    ) =
-      try {
-        val prop = new Properties()
-        prop.load(new FileInputStream("config.properties"))
-
-        (
-          prop.getProperty("consumerKey"),
-          prop.getProperty("consumerSecret"),
-          prop.getProperty("accessToken"),
-          prop.getProperty("accessTokenSecret")
-        )
-      } catch { case e: Exception =>
-          e.printStackTrace()
-          sys.exit(1)
-      }
-
+    ) =  (
+      prop.getProperty("consumerKey"),
+      prop.getProperty("consumerSecret"),
+      prop.getProperty("accessToken"),
+      prop.getProperty("accessTokenSecret")
+    )
+    
     val consumer = new DefaultOAuthConsumer(consumerKey, consumerSecret)
 
     if (accessToken == null || accessTokenSecret == null)
@@ -65,21 +77,6 @@ object FitbitClient extends FitbitEndpoints {
     print("Enter your verifier: ")
     val verifier = Console.readLine()
     provider.retrieveAccessToken(consumer, verifier)
-
-    saveTokens(consumer)
   }
 
-  private def saveTokens(consumer: OAuthConsumer) =
-    try {
-      val prop = new Properties()
-      prop.setProperty("consumerKey", consumer.getConsumerKey)
-      prop.setProperty("consumerSecret", consumer.getConsumerSecret)
-      prop.setProperty("accessToken", consumer.getToken)
-      prop.setProperty("accessTokenSecret", consumer.getTokenSecret)
-      prop.store(new FileOutputStream("config.properties"),
-        "OAuth credentials for this application.")
-    } catch { case e: Exception =>
-        e.printStackTrace()
-        sys.exit(2)
-    }
 }

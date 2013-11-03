@@ -1,15 +1,24 @@
 package me.seandw
+
+import java.io.FileInputStream
+import java.util.Properties
+
 import org.cognoseed.fitbit.FitbitClient
+
 import org.json4s._
 import org.json4s.native.JsonMethods._
 
 object FitbitApp extends App {
-  val client = FitbitClient()
+  val prop = new Properties
+  prop.load(new FileInputStream("config.properties"))
+  val client = FitbitClient.fromProperties(prop)
+
   val res = client.getResource("activities/steps/date/today/1m.json")
   val ast = parse(res)
 
   println(ast)
   println(ast \\ "activities-steps")
+
   for {
     JArray(child) <- ast \\ "activities-steps"
     JObject(entry) <- child
