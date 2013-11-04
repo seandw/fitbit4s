@@ -38,16 +38,25 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
     prop.store(stream, "OAuth credentials for this application.")
   }
 
+  def getActivity(
+    activity: String,
+    range: String = "1m",
+    start: String = "today"
+  ) = {
+    getResource("activities/"+activity+"/date/"+start+"/"+range+".json")
+  }
+
 }
 
 object FitbitClient extends FitbitEndpoints {
+
   def fromProperties(prop: Properties): FitbitClient = {
     val (
       consumerKey,
       consumerSecret,
       accessToken,
       accessTokenSecret
-    ) =  (
+    ) = (
       prop.getProperty("consumerKey"),
       prop.getProperty("consumerSecret"),
       prop.getProperty("accessToken"),

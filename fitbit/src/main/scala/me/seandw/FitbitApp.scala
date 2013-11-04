@@ -13,7 +13,7 @@ object FitbitApp extends App {
   prop.load(new FileInputStream("config.properties"))
   val client = FitbitClient.fromProperties(prop)
 
-  val res = client.getResource("activities/steps/date/today/1m.json")
+  val res = client.getActivity("steps", "3m")
   val ast = parse(res)
 
   println(ast)
