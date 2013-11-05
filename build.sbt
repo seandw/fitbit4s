@@ -1,4 +1,4 @@
-name := "fitbit"
+name := "fitbit4s"
 
 version := "0.0.1"
 
