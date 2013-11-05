@@ -3,8 +3,8 @@ package me.seandw
 import java.io.FileInputStream
 import java.util.Properties
 
-import org.cognoseed.fitbit.FitbitClient
-import org.cognoseed.fitbit.TimeSeriesResource
+import org.cognoseed.fitbit4s.FitbitClient
+import org.cognoseed.fitbit4s.TimeSeriesResource
 
 object FitbitApp extends App {
   val prop = new Properties

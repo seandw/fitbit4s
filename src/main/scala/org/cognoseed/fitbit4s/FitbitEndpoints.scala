@@ -1,4 +1,4 @@
-package org.cognoseed.fitbit
+package org.cognoseed.fitbit4s
 
 trait FitbitEndpoints {
   val BaseUrl = "https://api.fitbit.com/1/user/-/"

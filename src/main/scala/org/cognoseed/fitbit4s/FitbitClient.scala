@@ -1,4 +1,4 @@
-package org.cognoseed.fitbit
+package org.cognoseed.fitbit4s
 
 import java.net.URL
 import java.util.Properties
