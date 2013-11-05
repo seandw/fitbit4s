@@ -8,6 +8,9 @@ import scala.io.BufferedSource
 import oauth.signpost.OAuthConsumer
 import oauth.signpost.basic.{DefaultOAuthConsumer, DefaultOAuthProvider}
 
+import org.json4s._
+import org.json4s.native.JsonMethods._
+
 class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
   private lazy val provider =
     new DefaultOAuthProvider(
@@ -54,13 +57,20 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
     provider.retrieveAccessToken(consumer, verifier)
   }
 
-
   def getActivity(
     activity: String,
     range: String = "1m",
     start: String = "today"
-  ): String = {
-    getResource("activities/"+activity+"/date/"+start+"/"+range+".json")
+  ): List[TimeSeriesResource] = {
+    val json =
+      getResource("activities/"+activity+"/date/"+start+"/"+range+".json")
+    val ast = parse(json)
+    for {
+      JArray(child) <- ast \\ ("activities-"+activity)
+      JObject(entry) <- child
+      JField("dateTime", JString(dateTime)) <- entry
+      JField("value", JString(value)) <- entry
+    } yield TimeSeriesResource(dateTime, value.toInt)
   }
 
 }
