@@ -61,7 +61,7 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
     activity: String,
     range: String = "1m",
     start: String = "today"
-  ): List[TimeSeriesResource] = {
+  ): List[FitbitRecord] = {
     val json =
       getResource("activities/"+activity+"/date/"+start+"/"+range+".json")
     val ast = parse(json)
@@ -70,7 +70,7 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
       JObject(entry) <- child
       JField("dateTime", JString(dateTime)) <- entry
       JField("value", JString(value)) <- entry
-    } yield TimeSeriesResource(dateTime, value.toInt)
+    } yield TimeSeriesRecord(dateTime, value.toInt)
   }
 
 }
