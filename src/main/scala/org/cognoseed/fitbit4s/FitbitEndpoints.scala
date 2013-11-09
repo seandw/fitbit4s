@@ -1,8 +1,8 @@
 package org.cognoseed.fitbit4s
 
 trait FitbitEndpoints {
-  val BaseUrl = "https://api.fitbit.com/1/user/-/"
-  val RequestTokenUrl = "https://api.fitbit.com/oauth/request_token"
-  val AccessTokenUrl = "https://api.fitbit.com/oauth/access_token"
-  val AuthorizeUrl = "https://www.fitbit.com/oauth/authorize"
+  protected val BaseUrl = "https://api.fitbit.com/1/user/-/"
+  protected val RequestTokenUrl = "https://api.fitbit.com/oauth/request_token"
+  protected val AccessTokenUrl = "https://api.fitbit.com/oauth/access_token"
+  protected val AuthorizeUrl = "https://www.fitbit.com/oauth/authorize"
 }

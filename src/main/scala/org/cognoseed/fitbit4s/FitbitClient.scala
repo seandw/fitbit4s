@@ -3,7 +3,9 @@ package org.cognoseed.fitbit4s
 import java.net.URL
 import java.util.Properties
 import java.io.{InputStream, OutputStream}
+
 import scala.io.BufferedSource
+import scala.collection.immutable.HashSet
 
 import oauth.signpost.OAuthConsumer
 import oauth.signpost.basic.{DefaultOAuthConsumer, DefaultOAuthProvider}
@@ -30,13 +32,13 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
       consumer.setTokenWithSecret(accessToken, accessTokenSecret)
   }
 
-  def getResource(resource: String): String = {
-    val url = new URL(BaseUrl + resource)
-    val request = url.openConnection()
-    consumer.sign(request)
-    request.connect()
+  def getAccessTokens(): Unit = {
+    val url = provider.retrieveRequestToken(consumer, null)
+    println("Navigate to " + url + " to get your verifier.")
 
-    new BufferedSource(request.getInputStream()).mkString
+    print("Enter your verifier: ")
+    val verifier = Console.readLine()
+    provider.retrieveAccessToken(consumer, verifier)
   }
 
   def store(stream: OutputStream): Unit = {
@@ -48,25 +50,31 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
     prop.store(stream, "OAuth credentials for this application.")
   }
 
-  def getAccessTokens(): Unit = {
-    val url = provider.retrieveRequestToken(consumer, null)
-    println("Navigate to " + url + " to get your verifier.")
+  def getResource(resource: String): String = {
+    val url = new URL(BaseUrl + resource)
+    val request = url.openConnection()
+    consumer.sign(request)
+    request.connect()
 
-    print("Enter your verifier: ")
-    val verifier = Console.readLine()
-    provider.retrieveAccessToken(consumer, verifier)
+    new BufferedSource(request.getInputStream()).mkString
   }
 
-  def getActivity(
-    activity: String,
-    range: String = "1m",
+  def getTimeSeries(
+    resource: String,
+    end: String = "1m",
     start: String = "today"
   ): List[FitbitRecord] = {
+    if (!start.equals("today") && !FitbitClient.isDate(start))
+      throw new IllegalArgumentException("start must be a date or \"today\"")
+    if (!FitbitClient.isDate(end) && !FitbitClient.isRange(end))
+      throw new IllegalArgumentException("end must be a date or range")
+
     val json =
-      getResource("activities/"+activity+"/date/"+start+"/"+range+".json")
+      getResource(resource + "/date/" + start + "/" + end + ".json")
     val ast = parse(json)
+
     for {
-      JArray(child) <- ast \\ ("activities-"+activity)
+      JArray(child) <- ast \\ resource.replace('/', '-')
       JObject(entry) <- child
       JField("dateTime", JString(dateTime)) <- entry
       JField("value", JString(value)) <- entry
@@ -76,6 +84,9 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
 }
 
 object FitbitClient {
+  private val range =
+    HashSet("1d", "7d", "30d", "1w", "1m", "3m", "6m", "1y", "max")
+
   def fromProperties(prop: Properties): FitbitClient = {
     new FitbitClient(
       prop.getProperty("consumerKey"),
@@ -84,4 +95,10 @@ object FitbitClient {
       prop.getProperty("accessTokenSecret")
     )
   }
+
+  def isRange(in: String): Boolean =
+    range.contains(in)
+
+  def isDate(in: String): Boolean =
+    in.matches("""(\d\d\d\d)-(\d\d)-(\d\d)""")
 }

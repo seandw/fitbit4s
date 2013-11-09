@@ -7,11 +7,11 @@ import org.cognoseed.fitbit4s.FitbitClient
 import org.cognoseed.fitbit4s.TimeSeriesRecord
 
 object FitbitApp extends App {
-  val prop = new Properties
+  val prop = new Properties()
   prop.load(new FileInputStream("config.properties"))
   val client = FitbitClient.fromProperties(prop)
 
-  val res = client.getActivity("steps", "3m")
+  val res = client.getTimeSeries("activities/steps", "3m")
   for (TimeSeriesRecord(dt, v) <- res)
     println(dt + " -> " + v)
 }
