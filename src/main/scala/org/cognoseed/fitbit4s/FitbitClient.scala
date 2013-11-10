@@ -21,6 +21,9 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
       AuthorizeUrl
     )
 
+  if (consumer.getConsumerKey == null || consumer.getConsumerSecret == null)
+    throw new IllegalArgumentException("consumerKey/Secret cannot be null.")
+
   def this(
     consumerKey: String,
     consumerSecret: String,
@@ -32,14 +35,11 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
       consumer.setTokenWithSecret(accessToken, accessTokenSecret)
   }
 
-  def getAccessTokens(): Unit = {
-    val url = provider.retrieveRequestToken(consumer, null)
-    println("Navigate to " + url + " to get your verifier.")
-
-    print("Enter your verifier: ")
-    val verifier = Console.readLine()
+  def accessTokenUrl: String =
+    provider.retrieveRequestToken(consumer, null)
+    
+  def getAccessTokens(verifier: String): Unit =
     provider.retrieveAccessToken(consumer, verifier)
-  }
 
   def store(stream: OutputStream): Unit = {
     val prop = new Properties()
