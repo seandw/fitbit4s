@@ -63,7 +63,7 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
     resource: String,
     end: String = "1m",
     start: String = "today"
-  ): List[FitbitRecord] = {
+  ): List[TimeSeriesRecord] = {
     if (!start.equals("today") && !FitbitClient.isDate(start))
       throw new IllegalArgumentException("start must be a date or \"today\"")
     if (!FitbitClient.isDate(end) && !FitbitClient.isRange(end))
@@ -78,7 +78,7 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
       JObject(entry) <- child
       JField("dateTime", JString(dateTime)) <- entry
       JField("value", JString(value)) <- entry
-    } yield TimeSeriesRecord(dateTime, value.toInt)
+    } yield TimeSeriesRecord(dateTime, value)
   }
 
 }
