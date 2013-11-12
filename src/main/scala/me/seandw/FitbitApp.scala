@@ -11,7 +11,6 @@ object FitbitApp extends App {
   prop.load(new FileInputStream("config.properties"))
   val client = FitbitClient.fromProperties(prop)
 
-  val res = client.getTimeSeries("activities/steps", "3m")
-  for (TimeSeriesRecord(dt, v) <- res)
-    println(dt + " -> " + v)
+  val map = client.getUserInfo()
+  for ((key, value) <- map) println(key + " -> " + value)
 }

@@ -6,6 +6,7 @@ import java.io.{InputStream, OutputStream}
 
 import scala.io.BufferedSource
 import scala.collection.immutable.Set
+import scala.collection.mutable.LinkedHashMap
 
 import oauth.signpost.OAuthConsumer
 import oauth.signpost.basic.{DefaultOAuthConsumer, DefaultOAuthProvider}
@@ -78,6 +79,19 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
       JField("dateTime", JString(dateTime)) <- entry
       JField("value", JString(value)) <- entry
     } yield TimeSeriesRecord(dateTime, value)
+  }
+
+  def getUserInfo(): LinkedHashMap[String, String] = {
+    val json = getResource("profile.json")
+    val ast = parse(json)
+
+    val map = new LinkedHashMap[String, String]()
+    for {
+      JObject(child) <- ast \\ "user"
+      JField(key, JString(value)) <- child
+    } map.put(key, value)
+
+    map
   }
 
 }
