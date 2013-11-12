@@ -5,7 +5,7 @@ import java.util.Properties
 import java.io.{InputStream, OutputStream}
 
 import scala.io.BufferedSource
-import scala.collection.immutable.HashSet
+import scala.collection.immutable.Set
 
 import oauth.signpost.OAuthConsumer
 import oauth.signpost.basic.{DefaultOAuthConsumer, DefaultOAuthProvider}
@@ -69,8 +69,7 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
     if (!FitbitClient.isDate(end) && !FitbitClient.isRange(end))
       throw new IllegalArgumentException("end must be a date or range")
 
-    val json =
-      getResource(resource + "/date/" + start + "/" + end + ".json")
+    val json = getResource(resource + "/date/" + start + "/" + end + ".json")
     val ast = parse(json)
 
     for {
@@ -85,7 +84,7 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
 
 object FitbitClient {
   private val range =
-    HashSet("1d", "7d", "30d", "1w", "1m", "3m", "6m", "1y", "max")
+    Set("1d", "7d", "30d", "1w", "1m", "3m", "6m", "1y", "max")
 
   def fromProperties(prop: Properties): FitbitClient = {
     new FitbitClient(

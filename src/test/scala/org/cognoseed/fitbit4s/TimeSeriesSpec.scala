@@ -61,18 +61,34 @@ class TimeSeriesSpec
       "activities/tracker/elevation"
     )
       
+  val invalidDates =
+    Table(
+      ("start", "end"),
+      ("today", "2011-11-1"),     // Dates MUST be YYYY-MM-DD
+      ("2011-11-11", "invalid"),  // end must be a date or a valid range
+      ("11-11-11", "2011-11-11"),
+      ("2011-1-11", "3m")
+    )
 
-  property("a valid time series should produce a nonempty list") {
+  ignore("a valid time series should produce a nonempty list") {
     forAll (validArgs) { arg =>
       client.getTimeSeries(arg, "1w").size should be (7)
     }
   }
 
-  property("an invalid time series should throw an exception") {
+  ignore("an invalid time series should throw an exception") {
     forAll (invalidArgs) { arg =>
       evaluating {
         client.getTimeSeries(arg)
       } should produce [IOException]
+    }
+  }
+
+  property("an invalid start/end should throw an exception") {
+    forAll (invalidDates) { (start, end) =>
+      evaluating {
+        client.getTimeSeries("activities/steps", end, start)
+      } should produce [IllegalArgumentException]
     }
   }
 
