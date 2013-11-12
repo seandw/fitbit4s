@@ -11,6 +11,6 @@ object FitbitApp extends App {
   prop.load(new FileInputStream("config.properties"))
   val client = FitbitClient.fromProperties(prop)
 
-  val map = client.getUserInfo()
-  for ((key, value) <- map) println(key + " -> " + value)
+  val user = client.getUserInfo()
+  println(user.fullName)
 }
