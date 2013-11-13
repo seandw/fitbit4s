@@ -74,14 +74,9 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
       throw new IllegalArgumentException("end must be a date or range")
 
     val json = getResource(resource + "/date/" + start + "/" + end + ".json")
-    val ast = parse(json)
 
-    for {
-      JArray(child) <- ast \\ resource.replace('/', '-')
-      JObject(entry) <- child
-      JField("dateTime", JString(dateTime)) <- entry
-      JField("value", JString(value)) <- entry
-    } yield TimeSeriesRecord(dateTime, value)
+    read[List[TimeSeriesRecord]](
+      compact(render(parse(json) \\ resource.replace('/', '-'))))
   }
 
   def getUserInfo(): UserRecord = {
