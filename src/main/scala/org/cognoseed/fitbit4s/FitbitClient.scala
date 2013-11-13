@@ -12,6 +12,8 @@ import oauth.signpost.basic.{DefaultOAuthConsumer, DefaultOAuthProvider}
 
 import org.json4s._
 import org.json4s.native.JsonMethods._
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization.read
 
 class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
   private lazy val provider =
@@ -20,6 +22,8 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
       AccessTokenUrl,
       AuthorizeUrl
     )
+  implicit val formats =
+    Serialization.formats(NoTypeHints) + new UserRecordSerializer
 
   if (consumer.getConsumerKey == null || consumer.getConsumerSecret == null)
     throw new IllegalArgumentException("consumerKey/Secret cannot be null.")
@@ -82,9 +86,7 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
 
   def getUserInfo(): UserRecord = {
     val json = getResource("profile.json")
-    val ast = parse(json)
-
-    UserRecord.fromAst(ast \\ "user")
+    read[UserRecord](compact(render(parse(json) \\ "user")))
   }
 
 }
