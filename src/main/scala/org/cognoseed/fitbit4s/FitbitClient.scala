@@ -62,7 +62,7 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
     resource: String,
     end: String = "1m",
     start: String = "today"
-  ): Seq[TimeSeriesRecord] = {
+  ): List[TimeSeriesRecord] = {
     if (!start.equals("today") && !FitbitClient.isDate(start))
       throw new IllegalArgumentException("start must be a date or \"today\"")
     if (!FitbitClient.isDate(end) && !FitbitClient.isRange(end))
@@ -72,7 +72,7 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
 
 
     (Json.parse(json) \ resource.replace('/', '-')) match {
-      case JsArray(seq) => seq map (r => r.as[TimeSeriesRecord])
+      case JsArray(seq) => seq.toList map (_.as[TimeSeriesRecord])
       case _ => throw new IllegalStateException()
     }
   }
