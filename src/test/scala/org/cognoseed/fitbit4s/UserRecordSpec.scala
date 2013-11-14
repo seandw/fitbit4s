@@ -3,15 +3,9 @@ package org.cognoseed.fitbit4s
 import org.scalatest._
 import prop._
 
-import org.json4s._
-import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization.read
+import play.api.libs.json._
 
 class UserRecordSpec extends PropSpec with Matchers {
-  implicit val formats =
-    Serialization.formats(NoTypeHints) + new UserRecordSerializer
-
   // Mock JSON user record.
   val json = 
     """
@@ -44,7 +38,7 @@ class UserRecordSpec extends PropSpec with Matchers {
     """
   
   property("a valid JSON record should result in a completely filled record") {
-    val record = read[UserRecord](json)
+    val record = Json.parse(json).as[UserRecord]
 
     record.avatar should equal ("avatar")
     record.avatar150 should equal ("avatar150")

@@ -10,10 +10,7 @@ import scala.collection.mutable.LinkedHashMap
 import oauth.signpost.OAuthConsumer
 import oauth.signpost.basic.{DefaultOAuthConsumer, DefaultOAuthProvider}
 
-import org.json4s._
-import org.json4s.native.JsonMethods._
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization.read
+import play.api.libs.json._
 
 class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
   private lazy val provider =
@@ -22,8 +19,6 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
       AccessTokenUrl,
       AuthorizeUrl
     )
-  implicit val formats =
-    Serialization.formats(NoTypeHints) + new UserRecordSerializer
 
   if (consumer.getConsumerKey == null || consumer.getConsumerSecret == null)
     throw new IllegalArgumentException("consumerKey/Secret cannot be null.")
@@ -67,7 +62,7 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
     resource: String,
     end: String = "1m",
     start: String = "today"
-  ): List[TimeSeriesRecord] = {
+  ): Seq[TimeSeriesRecord] = {
     if (!start.equals("today") && !FitbitClient.isDate(start))
       throw new IllegalArgumentException("start must be a date or \"today\"")
     if (!FitbitClient.isDate(end) && !FitbitClient.isRange(end))
@@ -75,13 +70,16 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
 
     val json = getResource(resource + "/date/" + start + "/" + end + ".json")
 
-    read[List[TimeSeriesRecord]](
-      compact(render(parse(json) \\ resource.replace('/', '-'))))
+
+    (Json.parse(json) \ resource.replace('/', '-')) match {
+      case JsArray(seq) => seq map (r => r.as[TimeSeriesRecord])
+      case _ => throw new IllegalStateException()
+    }
   }
 
   def getUserInfo(): UserRecord = {
     val json = getResource("profile.json")
-    read[UserRecord](compact(render(parse(json) \\ "user")))
+    (Json.parse(json) \ "user").as[UserRecord]
   }
 
 }

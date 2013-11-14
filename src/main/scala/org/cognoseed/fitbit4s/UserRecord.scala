@@ -1,6 +1,6 @@
 package org.cognoseed.fitbit4s
 
-import org.json4s._
+import play.api.libs.json._
 
 class UserRecord(
   val aboutMe: String,
@@ -31,95 +31,37 @@ class UserRecord(
   val weightUnit: String
 )
 
-// Too large for a case class means writing this ourselves...
-class UserRecordSerializer extends CustomSerializer[UserRecord](format => (
-  {
-    case JObject(
-      //JField("aboutMe", JString(aboutMe)) ::
-      JField("avatar", JString(avatar)) ::
-        JField("avatar150", JString(avatar150)) ::
-        JField("city", JString(city)) ::
-        JField("country", JString(country)) ::
-        JField("dateOfBirth", JString(dateOfBirth)) ::
-        JField("displayName", JString(displayName)) ::
-        JField("distanceUnit", JString(distanceUnit)) ::
-        JField("encodedId", JString(encodedId)) ::
-        JField("foodsLocale", JString(foodsLocale)) ::
-        JField("fullName", JString(fullName)) ::
-        JField("gender", JString(gender)) ::
-        JField("glucoseUnit", JString(glucoseUnit)) ::
-        JField("height", JDouble(height)) ::
-        JField("heightUnit", JString(heightUnit)) ::
-        JField("locale", JString(locale)) ::
-        JField("memberSince", JString(memberSince)) ::
-        //JField("nickname", JString(nickname)) ::
-        JField("offsetFromUTCMillis", JInt(offsetFromUTCMillis)) ::
-        JField("state", JString(state)) ::
-        JField("strideLengthRunning", JInt(strideLengthRunning)) ::
-        JField("strideLengthWalking", JInt(strideLengthWalking)) ::
-        JField("timezone", JString(timezone)) ::
-        JField("waterUnit", JString(waterUnit)) ::
-        JField("weight", JDouble(weight)) ::
-        JField("weightUnit", JString(weightUnit)) :: Nil
-    ) =>
+object UserRecord {
+  implicit val reader: Reads[UserRecord] = new Reads[UserRecord] {
+    def reads(json: JsValue): JsResult[UserRecord] = JsSuccess[UserRecord](
       new UserRecord(
-        "",
-        avatar,
-        avatar150,
-        city,
-        country,
-        dateOfBirth,
-        displayName,
-        distanceUnit,
-        encodedId,
-        foodsLocale,
-        fullName,
-        gender,
-        glucoseUnit,
-        height,
-        heightUnit,
-        locale,
-        memberSince,
-        "",
-        offsetFromUTCMillis.toInt,
-        state,
-        strideLengthRunning.toInt,
-        strideLengthWalking.toInt,
-        timezone,
-        waterUnit,
-        weight,
-        weightUnit
+        (json \ "aboutMe").asOpt[String].getOrElse(""),
+        (json \ "avatar").as[String],
+        (json \ "avatar150").as[String],
+        (json \ "city").as[String],
+        (json \ "country").as[String],
+        (json \ "dateOfBirth").as[String],
+        (json \ "displayName").as[String],
+        (json \ "distanceUnit").as[String],
+        (json \ "encodedId").as[String],
+        (json \ "foodsLocale").as[String],
+        (json \ "fullName").as[String],
+        (json \ "gender").as[String],
+        (json \ "glucoseUnit").as[String],
+        (json \ "height").as[Double],
+        (json \ "heightUnit").as[String],
+        (json \ "locale").as[String],
+        (json \ "memberSince").as[String],
+        (json \ "nickname").asOpt[String].getOrElse(""),
+        (json \ "offsetFromUTCMillis").as[Int],
+        (json \ "state").as[String],
+        (json \ "strideLengthRunning").as[Int],
+        (json \ "strideLengthWalking").as[Int],
+        (json \ "timezone").as[String],
+        (json \ "waterUnit").as[String],
+        (json \ "weight").as[Double],
+        (json \ "weightUnit").as[String]
       )
-  },
-  {
-    case x: UserRecord =>
-      JObject(
-        JField("aboutMe", JString(x.aboutMe)) ::
-          JField("avatar", JString(x.avatar)) ::
-          JField("avatar150", JString(x.avatar150)) ::
-          JField("city", JString(x.city)) ::
-          JField("country", JString(x.country)) ::
-          JField("dateOfBirth", JString(x.dateOfBirth)) ::
-          JField("displayName", JString(x.displayName)) ::
-          JField("distanceUnit", JString(x.distanceUnit)) ::
-          JField("encodedId", JString(x.encodedId)) ::
-          JField("foodsLocale", JString(x.foodsLocale)) ::
-          JField("fullName", JString(x.fullName)) ::
-          JField("gender", JString(x.gender)) ::
-          JField("glucoseUnit", JString(x.glucoseUnit)) ::
-          JField("height", JDouble(x.height)) ::
-          JField("heightUnit", JString(x.heightUnit)) ::
-          JField("locale", JString(x.locale)) ::
-          JField("memberSince", JString(x.memberSince)) ::
-          JField("nickname", JString(x.nickname)) ::
-          JField("offsetFromUTCMillis", JInt(x.offsetFromUTCMillis)) ::
-          JField("state", JString(x.state)) ::
-          JField("strideLengthRunning", JInt(x.strideLengthRunning)) ::
-          JField("strideLengthWalking", JInt(x.strideLengthWalking)) ::
-          JField("timezone", JString(x.timezone)) ::
-          JField("waterUnit", JString(x.waterUnit)) ::
-          JField("weight", JDouble(x.weight)) ::
-          JField("weightUnit", JString(x.weightUnit)) :: Nil
-      )
+    )
   }
-))
+}
