@@ -11,5 +11,7 @@ resolvers += (
 libraryDependencies ++= Seq(
   "oauth.signpost" % "signpost-core" % "1.2.1.2",
   "com.typesafe.play" %% "play-json" % "2.2.1",
+  "com.squareup.retrofit" % "retrofit" % "1.2.2",
+  "com.google.code.gson" % "gson" % "2.2.4",
   "org.scalatest" %% "scalatest" % "2.0" % "test"
 )
