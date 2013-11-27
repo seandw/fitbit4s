@@ -1,5 +1,7 @@
 package org.cognoseed.fitbit4s
 
+import org.cognoseed.fitbit4s.model._
+
 import java.net.URL
 import java.util.Properties
 import java.io.{InputStream, OutputStream}
@@ -17,19 +19,19 @@ import com.google.gson.Gson
 
 import scala.collection.JavaConversions._
 
-class FitbitClient(consumer: RetrofitHttpOAuthConsumer) extends FitbitEndpoints {
+class FitbitClient(consumer: RetrofitHttpOAuthConsumer) {
   private lazy val provider =
     new DefaultOAuthProvider(
-      RequestTokenUrl,
-      AccessTokenUrl,
-      AuthorizeUrl
+      FitbitClient.RequestTokenUrl,
+      FitbitClient.AccessTokenUrl,
+      FitbitClient.AuthorizeUrl
     )
 
   if (consumer.getConsumerKey == null || consumer.getConsumerSecret == null)
     throw new IllegalArgumentException("consumerKey/Secret cannot be null.")
 
   private val adapter = new RestAdapter.Builder()
-    .setServer("https://api.fitbit.com")
+    .setServer(FitbitClient.BaseUrl)
     .setClient(new SigningUrlConnectionClient(consumer))
     .setConverter(new GsonNestedConverter(new Gson())).build()
   private val service = adapter.create(classOf[FitbitService])
@@ -79,13 +81,18 @@ class FitbitClient(consumer: RetrofitHttpOAuthConsumer) extends FitbitEndpoints 
     ).toList
   }
 
-  def getUserInfo(): UserRecord = {
+  def getUserInfo(): User = {
     service.getUserInfo("-")
   }
 
 }
 
 object FitbitClient {
+  val BaseUrl = "https://api.fitbit.com"
+  val RequestTokenUrl = "https://api.fitbit.com/oauth/request_token"
+  val AccessTokenUrl = "https://api.fitbit.com/oauth/access_token"
+  val AuthorizeUrl = "https://www.fitbit.com/oauth/authorize"
+
   private val range =
     Set("1d", "7d", "30d", "1w", "1m", "3m", "6m", "1y", "max")
 

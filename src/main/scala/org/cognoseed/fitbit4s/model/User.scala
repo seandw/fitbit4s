@@ -1,6 +1,6 @@
-package org.cognoseed.fitbit4s
+package org.cognoseed.fitbit4s.model
 
-class UserRecord(
+class User(
   val aboutMe: String,
   val avatar: String,
   val avatar150: String,
