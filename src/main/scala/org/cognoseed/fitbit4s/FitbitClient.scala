@@ -4,15 +4,20 @@ import java.net.URL
 import java.util.Properties
 import java.io.{InputStream, OutputStream}
 
-import scala.io.BufferedSource
-import scala.collection.mutable.LinkedHashMap
-
 import oauth.signpost.OAuthConsumer
-import oauth.signpost.basic.{DefaultOAuthConsumer, DefaultOAuthProvider}
+import oauth.signpost.basic.DefaultOAuthProvider
 
-import play.api.libs.json._
+import retrofit.RestAdapter
 
-class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
+import se.akerfeldt.signpost.retrofit.RetrofitHttpOAuthConsumer
+import org.cognoseed.retrofit.GsonNestedConverter
+import org.cognoseed.retrofit.SigningUrlConnectionClient
+
+import com.google.gson.Gson
+
+import scala.collection.JavaConversions._
+
+class FitbitClient(consumer: RetrofitHttpOAuthConsumer) extends FitbitEndpoints {
   private lazy val provider =
     new DefaultOAuthProvider(
       RequestTokenUrl,
@@ -23,13 +28,19 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
   if (consumer.getConsumerKey == null || consumer.getConsumerSecret == null)
     throw new IllegalArgumentException("consumerKey/Secret cannot be null.")
 
+  private val adapter = new RestAdapter.Builder()
+    .setServer("https://api.fitbit.com")
+    .setClient(new SigningUrlConnectionClient(consumer))
+    .setConverter(new GsonNestedConverter(new Gson())).build()
+  private val service = adapter.create(classOf[FitbitService])
+
   def this(
     consumerKey: String,
     consumerSecret: String,
     accessToken: String = null,
     accessTokenSecret: String = null
   ) = {
-    this(new DefaultOAuthConsumer(consumerKey, consumerSecret))
+    this(new RetrofitHttpOAuthConsumer(consumerKey, consumerSecret))
     if (accessToken != null && accessTokenSecret != null)
       consumer.setTokenWithSecret(accessToken, accessTokenSecret)
   }
@@ -49,15 +60,6 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
     prop.store(stream, "OAuth credentials for this application.")
   }
 
-  def getResource(resource: String): String = {
-    val url = new URL(BaseUrl + resource)
-    val request = url.openConnection()
-    consumer.sign(request)
-    request.connect()
-
-    new BufferedSource(request.getInputStream()).mkString
-  }
-
   def getTimeSeries(
     resource: String,
     end: String = "1m",
@@ -68,18 +70,17 @@ class FitbitClient(consumer: OAuthConsumer) extends FitbitEndpoints {
     if (!FitbitClient.isDate(end) && !FitbitClient.isRange(end))
       throw new IllegalArgumentException("end must be a date or range")
 
-    val json = getResource(resource + "/date/" + start + "/" + end + ".json")
-
-
-    (Json.parse(json) \ resource.replace('/', '-')) match {
-      case JsArray(seq) => seq.toList map (_.as[TimeSeriesRecord])
-      case _ => throw new IllegalStateException()
-    }
+    service.getTimeSeries(
+      "-",
+      resource.split("/")(0),
+      resource.split("/")(1),
+      start,
+      end
+    ).toList
   }
 
   def getUserInfo(): UserRecord = {
-    val json = getResource("profile.json")
-    (Json.parse(json) \ "user").as[UserRecord]
+    service.getUserInfo("-")
   }
 
 }

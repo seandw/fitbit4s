@@ -1,7 +1,5 @@
 package org.cognoseed.fitbit4s
 
-import play.api.libs.json._
-
 class UserRecord(
   val aboutMe: String,
   val avatar: String,
@@ -30,38 +28,3 @@ class UserRecord(
   val weight: Double,
   val weightUnit: String
 )
-
-object UserRecord {
-  implicit val reader: Reads[UserRecord] = new Reads[UserRecord] {
-    def reads(json: JsValue): JsResult[UserRecord] = JsSuccess[UserRecord](
-      new UserRecord(
-        (json \ "aboutMe").asOpt[String].getOrElse(""),
-        (json \ "avatar").as[String],
-        (json \ "avatar150").as[String],
-        (json \ "city").as[String],
-        (json \ "country").as[String],
-        (json \ "dateOfBirth").as[String],
-        (json \ "displayName").as[String],
-        (json \ "distanceUnit").as[String],
-        (json \ "encodedId").as[String],
-        (json \ "foodsLocale").as[String],
-        (json \ "fullName").as[String],
-        (json \ "gender").as[String],
-        (json \ "glucoseUnit").as[String],
-        (json \ "height").as[Double],
-        (json \ "heightUnit").as[String],
-        (json \ "locale").as[String],
-        (json \ "memberSince").as[String],
-        (json \ "nickname").asOpt[String].getOrElse(""),
-        (json \ "offsetFromUTCMillis").as[Int],
-        (json \ "state").as[String],
-        (json \ "strideLengthRunning").as[Int],
-        (json \ "strideLengthWalking").as[Int],
-        (json \ "timezone").as[String],
-        (json \ "waterUnit").as[String],
-        (json \ "weight").as[Double],
-        (json \ "weightUnit").as[String]
-      )
-    )
-  }
-}
