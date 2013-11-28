@@ -70,12 +70,14 @@ class TimeSeriesSpec
       ("2011-1-11", "3m")
     )
 
+  // This test is the worst. The creator should be shot.
   ignore("a valid time series should produce a nonempty list") {
     forAll (validArgs) { arg =>
       client.getTimeSeries(arg, "1w").size should be (7)
     }
   }
 
+  // See above.
   ignore("an invalid time series should throw an exception") {
     forAll (invalidArgs) { arg =>
       evaluating {

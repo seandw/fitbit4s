@@ -72,13 +72,25 @@ class FitbitClient(consumer: RetrofitHttpOAuthConsumer) {
     if (!FitbitClient.isDate(end) && !FitbitClient.isRange(end))
       throw new IllegalArgumentException("end must be a date or range")
 
-    service.getTimeSeries(
-      "-",
-      resource.split("/")(0),
-      resource.split("/")(1),
-      start,
-      end
-    ).toList
+    val split = resource.split("/")
+
+    if (split.length == 2)
+      service.getTimeSeries(
+        "-",
+        split(0),
+        split(1),
+        start,
+        end
+      ).toList
+    else
+      service.getTimeSeries(
+        "-",
+        split(0),
+        split(1),
+        split(2),
+        start,
+        end
+      ).toList
   }
 
   def getUserInfo(): User = {

@@ -1,44 +1,51 @@
-package org.cognoseed.fitbit4s
+package org.cognoseed.fitbit4s.model
 
 import org.scalatest._
 import prop._
 
-import play.api.libs.json._
+import org.cognoseed.retrofit._
+import com.google.gson.Gson
+import retrofit.mime.TypedString
 
-class UserRecordSpec extends PropSpec with Matchers {
+class UserSpec extends PropSpec with Matchers {
   // Mock JSON user record.
   val json = 
     """
-      {
-        "avatar":"avatar",
-        "avatar150":"avatar150",
-        "city":"city",
-        "country":"country",
-        "dateOfBirth":"dateOfBirth",
-        "displayName":"displayName",
-        "distanceUnit":"distanceUnit",
-        "encodedId":"encodedId",
-        "foodsLocale":"foodsLocale",
-        "fullName":"fullName",
-        "gender":"gender",
-        "glucoseUnit":"glucoseUnit",
-        "height":8.8,
-        "heightUnit":"heightUnit",
-        "locale":"locale",
-        "memberSince":"memberSince",
-        "offsetFromUTCMillis":-28800000,
-        "state":"state",
-        "strideLengthRunning":1,
-        "strideLengthWalking":2,
-        "timezone":"timezone",
-        "waterUnit":"waterUnit",
-        "weight":9.9,
-        "weightUnit":"weightUnit"
+      { 
+        "user":{
+          "avatar":"avatar",
+          "avatar150":"avatar150",
+          "city":"city",
+          "country":"country",
+          "dateOfBirth":"dateOfBirth",
+          "displayName":"displayName",
+          "distanceUnit":"distanceUnit",
+          "encodedId":"encodedId",
+          "foodsLocale":"foodsLocale",
+          "fullName":"fullName",
+          "gender":"gender",
+          "glucoseUnit":"glucoseUnit",
+          "height":8.8,
+          "heightUnit":"heightUnit",
+          "locale":"locale",
+          "memberSince":"memberSince",
+          "offsetFromUTCMillis":-28800000,
+          "state":"state",
+          "strideLengthRunning":1,
+          "strideLengthWalking":2,
+          "timezone":"timezone",
+          "waterUnit":"waterUnit",
+          "weight":9.9,
+          "weightUnit":"weightUnit"
+        }
       }
     """
   
   property("a valid JSON record should result in a completely filled record") {
-    val record = Json.parse(json).as[UserRecord]
+    val record = new GsonNestedConverter(new Gson()).fromBody(
+      new TypedString(json),
+      classOf[User]
+    ).asInstanceOf[User]
 
     record.avatar should equal ("avatar")
     record.avatar150 should equal ("avatar150")
